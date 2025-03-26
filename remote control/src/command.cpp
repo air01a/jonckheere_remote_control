@@ -1,4 +1,25 @@
 #include "command.h"
+#include <ArduinoJson.h>
+
+Command commands[NUM_COMMANDS] = {
+    {"AD+",ad_plus},
+      {"AD-",ad_minus},
+      {"AD",ad_stop},
+      {"DEC+",dec_plus},
+      {"DEC-",dec_minus},
+      {"DEC",dec_stop},
+      {"sidereal", setSidereal},
+      {"lunar", setLunar},
+      {"solar", setSolar},
+      {"x1",x1},
+      {"x2",x2},
+      {"x4",x4},
+      {"x16",x16},
+      {"COU+",cou_plus},
+      {"COU-",cou_minus},
+      {"COUSTOP",cou_stop},
+  
+  };
 
 si5351RDiv_t r_div = SI5351_R_DIV_64;
 int freq_index = 0;
@@ -165,4 +186,21 @@ char*  cou_minus() {
     digitalWrite(DIR_COU2,HIGH);
     return "OK";
 
+}
+
+String  processCommand(String command, String parameters, String clientId) {
+    Serial.println("Commande reçue: " + command + " de " + clientId);
+    
+    // Traiter la commande (exemple)
+    String result;
+    for (int i = 0; i < NUM_COMMANDS; i++) {
+      if (command.compareTo(commands[i].command) == 0) {
+          Serial.println(commands[i].command);
+
+    
+          return commands[i].function(); 
+          //sendJsonResponse(clientIp, clientPort, responseDoc);
+        }
+    }
+    return "Unknown command";
 }

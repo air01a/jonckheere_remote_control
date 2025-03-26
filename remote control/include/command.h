@@ -21,8 +21,6 @@
 
 
 
-
-
 //SI5351 Configuration parameters
 typedef struct FrequencyParams{
     uint8_t pll_mult;    // a
@@ -65,5 +63,13 @@ char* dec_plus();
 char* cou_plus();
 char* cou_minus ();
 char* cou_stop();
+
+
+
+String processCommand(String command, String parameters, String clientId);
+
+
+
+
 
 #endif
