@@ -38,7 +38,7 @@ typedef struct FrequencyParams{
 
 
 
-typedef char* (*CommandFunction)();  // Définir un type pour le pointeur de fonction
+typedef String (*CommandFunction)();  // Définir un type pour le pointeur de fonction
 
 typedef struct  {
   const char* command;
@@ -47,28 +47,28 @@ typedef struct  {
 
 
 // List of available commands
-char* setLunar();
-char* setSidereal();
-char* setSolar();
-char* x1();
-char* x2();
-char* x4();
-char* x16();
-char* ad_stop();
-char* ad_plus();
-char* ad_minus();
-char* dec_stop();
-char* dec_minus();
-char* dec_plus();
-char* cou_plus();
-char* cou_minus ();
-char* cou_stop();
+String setLunar();
+String setSidereal();
+String setSolar();
+String x1();
+String x2();
+String x4();
+String x16();
+String ad_stop();
+String ad_plus();
+String ad_minus();
+String dec_stop();
+String dec_minus();
+String dec_plus();
+String cou_plus();
+String cou_minus ();
+String cou_stop();
 
 
 
 String processCommand(String command, String parameters, String clientId);
 
-
+void initClock();
 
 
 

@@ -124,13 +124,9 @@ void sendJsonResponse(IPAddress clientIp, uint16_t clientPort, JsonDocument& doc
             String command = doc["command"] | "";
             String parameters = doc["parameters"] | "";
             String result = processCommand(command, parameters, UdpClients[clientIndex].id);
-            JsonDocument responseDoc;
-            responseDoc["type"] = "response";
-            responseDoc["status"] = "success";
-            responseDoc["message"] = "Commande traitée";
-            responseDoc["command_result"] = result;
-            sendJsonResponse(clientIp, clientPort, responseDoc);
-
+            udp.beginPacket(clientIp, clientPort);
+            udp.print(result);
+            udp.endPacket();
           }
           else if (messageType == "ping") {
             // Répondre au ping

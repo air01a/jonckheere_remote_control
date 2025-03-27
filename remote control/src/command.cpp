@@ -32,7 +32,7 @@ FrequencyParams ADFrequencies[NUM_FREQUENCIES] = {
 };
 
 const char *frequencyName[3] = {"solar", "sidereal", "lunar"};
-
+String ok="OK";
 /***********************************************************/
 /*                   Manage si5351 command                 */
 /***********************************************************/
@@ -60,103 +60,113 @@ void setDECFrequencies(si5351RDiv_t rdiv){
 //**********************************************************
 //*                    Manage mode command                  
 //**********************************************************
-char* setLunar()
+
+String retCommand(int status, String message) {
+    JsonDocument doc;
+    doc["status"] = status;
+    doc["message"] = message;
+    String response;
+    serializeJson(doc, response);
+    return response;
+}
+
+String setLunar()
 {
     freq_index=2;
     setADFrequencies(ADFrequencies[freq_index].r_div);
-    return "OK";
+    return retCommand(0, ok);
 
 }
 
-char* setSidereal()
+String setSidereal()
 {
     freq_index=1;
     setADFrequencies(ADFrequencies[freq_index].r_div);
-    return "OK";
+    return retCommand(0, ok);
 
 }
 
-char* setSolar()
+String setSolar()
 {
     freq_index=0;
     setADFrequencies(ADFrequencies[freq_index].r_div);
-    return "OK";
+    return retCommand(0, ok);
 
 }
 
 /***********************************************************/
 /*                    Manage speed command                 */
 /***********************************************************/
-char* x1()
+String x1()
 {
     r_div = SI5351_R_DIV_64;
-    return "OK";
+    return retCommand(0, ok);
 }
 
-char* x2()
+String x2()
 {
     r_div = SI5351_R_DIV_32;
-    return "OK";
+    return retCommand(0, ok);
 
 }
 
-char* x4()
+String x4()
 {
     r_div = SI5351_R_DIV_16;
-    return "OK";
+    return retCommand(0, ok);
 
 }
 
-char* x16()
+String x16()
 {
     r_div = SI5351_R_DIV_4;
-    return "OK";
+    return retCommand(0, ok);
 
 }
 
 
-char* ad_stop() {
+String ad_stop() {
     digitalWrite(DIR_AD_PIN,HIGH);
     setADFrequencies(SI5351_R_DIV_64);
-    return "OK";
+    return retCommand(0, ok);
 
 }
 
-char*  ad_plus() {
+String  ad_plus() {
     digitalWrite(DIR_AD_PIN,HIGH);
     setADFrequencies(r_div);
-    return "OK";
+    return retCommand(0, ok);
 
 }
 
-char*  ad_minus() {
+String  ad_minus() {
     digitalWrite(DIR_AD_PIN,LOW);
     setADFrequencies(r_div);
-    return "OK";
+    return retCommand(0, ok);
 
 }
     
     
-char*  dec_stop() {
+String  dec_stop() {
     //set_frequency(SI5351_R_DIV_64);
-    return "OK";
+    return retCommand(0, ok);
 
 }
     
-char*  dec_plus() {
+String  dec_plus() {
     // set_frequency();
     digitalWrite(DIR_DEC_PIN,HIGH);
     setDECFrequencies(r_div);
-    return "OK";
+    return retCommand(0, ok);
     
     
 }
     
-char* dec_minus() {
+String dec_minus() {
     digitalWrite(DIR_DEC_PIN,LOW);
     setDECFrequencies(r_div);
     // set_frequency();
-    return "OK";
+    return retCommand(0, ok);
     
 }
     
@@ -165,28 +175,27 @@ char* dec_minus() {
 /*               Manage Coupole                            */
 /***********************************************************/
 
-char*  cou_stop() {
-
+String  cou_stop() {
     digitalWrite(DIR_COU1,LOW);
     digitalWrite(DIR_COU2,LOW);
-    return "OK";
-
+    return retCommand(0, ok);
 }
     
-char*  cou_plus() {
+String  cou_plus() {
     // set_frequency();
     digitalWrite(DIR_COU1,HIGH);
     digitalWrite(DIR_COU2,LOW);
-    return "OK";
-
+    return retCommand(0, ok);
 }
 
-char*  cou_minus() {
+String  cou_minus() {
     digitalWrite(DIR_COU1,LOW);
     digitalWrite(DIR_COU2,HIGH);
-    return "OK";
+    return retCommand(0, ok);
 
 }
+
+
 
 String  processCommand(String command, String parameters, String clientId) {
     Serial.println("Commande reçue: " + command + " de " + clientId);
@@ -202,5 +211,19 @@ String  processCommand(String command, String parameters, String clientId) {
           //sendJsonResponse(clientIp, clientPort, responseDoc);
         }
     }
-    return "Unknown command";
+    return retCommand(1, "Invalid command");
+}
+
+void initClock() {
+#ifndef CLOCKSIMULATOR
+  /* Initialise the sensor */
+  if (clockgen.begin() != ERROR_NONE)
+  {
+    /* There was a problem detecting the IC ... check your connections */
+    Serial.print("Ooops, no Si5351 detected ... Check your wiring or I2C ADDR!");
+   // while(1);
+  } else {
+    Serial.println("Si5351 detected!");
+  }
+#endif
 }

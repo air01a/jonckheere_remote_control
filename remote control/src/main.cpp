@@ -6,16 +6,14 @@
 void setup() {
   Serial.begin(115200);
   //pinMode(LED_BUILTIN, OUTPUT);
-  
+  initClock();
   
   // Connexion au WiFi
-  Serial.print("Création du réseau Wifi");
+  Serial.println("Création du réseau Wifi");
   startWifi();
 
-  Serial.print("Démarrage du serveur UDP");
+  Serial.println("Démarrage du serveur UDP");
   startUdpServer();
-
-
 }
 
 void loop() {
