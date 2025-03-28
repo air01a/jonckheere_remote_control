@@ -2,23 +2,10 @@
 #include <ArduinoJson.h>
 
 Command commands[NUM_COMMANDS] = {
-    {"AD+",ad_plus},
-      {"AD-",ad_minus},
-      {"AD",ad_stop},
-      {"DEC+",dec_plus},
-      {"DEC-",dec_minus},
-      {"DEC",dec_stop},
-      {"sidereal", setSidereal},
-      {"lunar", setLunar},
-      {"solar", setSolar},
-      {"x1",x1},
-      {"x2",x2},
-      {"x4",x4},
-      {"x16",x16},
-      {"COU+",cou_plus},
-      {"COU-",cou_minus},
-      {"COUSTOP",cou_stop},
-  
+    {"mode",mode},
+    {"multiplier",multiplier},
+    {"direction",direction},
+    {"coupole",coupole},
   };
 
 si5351RDiv_t r_div = SI5351_R_DIV_64;
@@ -69,6 +56,9 @@ String retCommand(int status, String message) {
     serializeJson(doc, response);
     return response;
 }
+
+
+
 
 String setLunar()
 {
@@ -197,6 +187,77 @@ String  cou_minus() {
 
 
 
+String multiplier(String parameters) {
+    if (parameters.compareTo("x1") == 0) {
+        x1();
+        return retCommand(0, ok);
+    } else if (parameters.compareTo("x2") == 0) {
+        x2();
+        return retCommand(0, ok);
+    } else if (parameters.compareTo("x4") == 0) {
+        x4();
+        return retCommand(0, ok);
+    } else if (parameters.compareTo("x16") == 0) { 
+        x16();
+        return retCommand(0, ok);  
+    } else {
+        return retCommand(1, "Invalid multiplier"); 
+    }
+}
+
+String direction(String parameters) {
+    if (parameters.compareTo("right") == 0) {
+        ad_plus();
+        return retCommand(0, ok);
+    } else if (parameters.compareTo("left") == 0) {
+        ad_minus();
+        return retCommand(0, ok);
+    } else if (parameters.compareTo("up") == 0) {
+        dec_plus();
+        return retCommand(0, ok);
+    } else if (parameters.compareTo("down") == 0) {
+        dec_minus();
+        return retCommand(0, ok);
+    } else if (parameters.compareTo("stop") == 0) {
+        ad_stop();
+        dec_stop();
+        return retCommand(0, ok);
+    } else {
+        return retCommand(1, "Invalid direction"); 
+    }
+}
+
+String mode(String parameters) {
+    if (parameters.compareTo("solar") == 0) {
+        setSolar();
+        return retCommand(0, ok);
+    } else if (parameters.compareTo("sidereal") == 0) {
+        setSidereal();
+        return retCommand(0, ok);
+    } else if (parameters.compareTo("lunar") == 0) {
+        setLunar();
+        return retCommand(0, ok);
+    } else {
+        return retCommand(1, "Invalid mode"); 
+    }
+}
+
+String coupole(String parameters) {
+    if (parameters.compareTo("right") == 0) {
+        cou_plus();
+        return retCommand(0, ok);
+    } else if (parameters.compareTo("left") == 0) {
+        cou_minus();
+        return retCommand(0, ok);
+    } else if (parameters.compareTo("stop") == 0) {
+        cou_stop();
+        return retCommand(0, ok);
+    } else {
+        return retCommand(1, "Invalid coupole"); 
+    }
+}
+
+
 String  processCommand(String command, String parameters, String clientId) {
     Serial.println("Commande reçue: " + command + " de " + clientId);
     
@@ -207,7 +268,7 @@ String  processCommand(String command, String parameters, String clientId) {
           Serial.println(commands[i].command);
 
     
-          return commands[i].function(); 
+          return commands[i].function(parameters); 
           //sendJsonResponse(clientIp, clientPort, responseDoc);
         }
     }
