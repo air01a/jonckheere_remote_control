@@ -1,4 +1,4 @@
-package com.appmobile
+package com.jonck.remotecommand
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
