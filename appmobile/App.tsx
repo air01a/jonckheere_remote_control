@@ -1,89 +1,76 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { styles } from './styles/styles'; 
+import { TimeSystem, Multiplier, Direction, CouButton, DecSpeedButton } from './types/buttons.type';
 import { 
-  View, 
-  StyleSheet, 
+  View,  
   TouchableOpacity, 
   Text, 
   Alert, 
   ScrollView
 } from 'react-native';
-import dgram from 'react-native-udp';
 import { Buffer } from 'buffer';
+import LedButton from './components/led-button';
+import renderButtonRow from './components/button-row';
+import Button from './components/button';
+import { initUdpSocket, NETWORK_CONFIG } from './lib/udpsocket';
 
-type TimeSystem = 'solar' | 'lunar' | 'sidereal';
-type Multiplier = 'x1' | 'x2' | 'x4' | 'x16';
-type Direction = 'up' | 'down' | 'left' | 'right' | 'stop';
-type CouButton = 'left' | 'right' | 'stop';
-
-interface UDPMessage {
-  type: string;
-  command: string;
-  parameters: string;
-}
 
 const UDPControlApp: React.FC = () => {
   const [selectedSolar, setSelectedSolar] = useState<TimeSystem | null>(null);
   const [selectedMultiplier, setSelectedMultiplier] = useState<Multiplier | null>(null);
   const [selectedDirection, setSelectedDirection] = useState<Direction | null>(null);
   const [selectedCou, setSelectedCou] = useState<CouButton | null>(null);
+  const [selectedDecSpeed, setSelectedDecSpeed] = useState<DecSpeedButton | null>(null);
   const [receivedMessages, setReceivedMessages] = useState<string[]>([]);
-
+  const [endCourse, setEndCourse] = useState<boolean>(false);
+  const [isConnected, setIsConnected] = useState<boolean>(false);
   // Configuration réseau
-  const NETWORK_CONFIG = {
-    SERVER_IP: '192.168.1.1',   // Émulateur Android
-    SERVER_SEND_PORT: 4000,  // Port pour envoyer
-    CLIENT_LISTEN_PORT: 4000// Port pour écouter
-  };
 
   // Socket UDP pour l'envoi et la réception
   const [udpSocket, setUdpSocket] = useState<any>(null);
   const scrollViewRef =  useRef<ScrollView>(null);
+
+
+
   useEffect(() => {
     // Défile automatiquement vers la fin à chaque mise à jour des messages
     if (scrollViewRef.current) {
       scrollViewRef.current.scrollToEnd({ animated: true });
     }
   }, [receivedMessages]);
+
+  const onUdpMessageCallBack = (msg: Buffer, rinfo: any) => {
+    try {
+      if (!isConnected) setIsConnected(true);
+      //convert msg to object with json
+      const msgJson = JSON.parse(msg.toString('utf8'));
+      if (msgJson.type === 'endCourse') {
+        setEndCourse(msgJson.value);
+      } else { 
+        if (msgJson.type === 'connect') {
+          setSelectedDecSpeed(msgJson.dec_speed);
+          setSelectedMultiplier(msgJson.multiplier);
+          setSelectedSolar(msgJson.time_system);
+        }
+      }
+
+      const message = msg.toString('utf8');
+      
+      console.log('Message UDP reçu:', message);
+      
+      // Mise à jour de la liste des messages reçus
+      setReceivedMessages(prev => [
+        ...prev, 
+        `From ${rinfo.address}:${rinfo.port} - ${message}`
+      ]);
+    } catch (error) {
+      console.error('Erreur de traitement du message:', error);
+    }
+  };
   // Initialisation du socket UDP
   useEffect(() => {
     // Créer le socket UDP
-    const socket = dgram.createSocket({ 
-      type: 'udp4', 
-      reusePort: true,
-      debug: __DEV__ 
-    });
-
-
-
-    // Écoute des messages entrants
-    socket.bind(NETWORK_CONFIG.CLIENT_LISTEN_PORT);
-    
-    socket.on('listening', () => {
-      const address = socket.address();
-      console.log(`Socket UDP en écoute sur ${address.address}:${address.port}`);
-    });
-
-    // Gestion des messages reçus
-    socket.on('message', (msg: Buffer, rinfo: any) => {
-      try {
-        const message = msg.toString('utf8');
-        console.log('Message UDP reçu:', message);
-        
-        // Mise à jour de la liste des messages reçus
-        setReceivedMessages(prev => [
-          ...prev, 
-          `From ${rinfo.address}:${rinfo.port} - ${message}`
-        ]);
-      } catch (error) {
-        console.error('Erreur de traitement du message:', error);
-      }
-    });
-
-    // Gestion des erreurs
-    socket.on('error', (err) => {
-      console.error('Erreur de socket UDP:', err);
-      Alert.alert('Erreur de Socket', err.message);
-    });
+    const socket = initUdpSocket(onUdpMessageCallBack);
 
     // Sauvegarde du socket
     setUdpSocket(socket);
@@ -94,9 +81,13 @@ const UDPControlApp: React.FC = () => {
     };
   }, []);
 
+
+ 
+
   // Envoi de message UDP
   const sendUDPMessage = useCallback((data: UDPMessage): void => {
     if (!udpSocket) {
+      setIsConnected(false);
       Alert.alert('Erreur', 'Socket UDP non initialisé');
       return;
     }
@@ -125,6 +116,8 @@ const UDPControlApp: React.FC = () => {
     }
   }, [udpSocket]);
 
+
+  
   // Méthodes de gestion des boutons (identiques aux versions précédentes)
   const handleSolarPress = (type: TimeSystem): void => {
     setSelectedSolar(type);
@@ -141,6 +134,15 @@ const UDPControlApp: React.FC = () => {
       type: 'command', 
       command: 'multiplier',
       parameters: multiplier
+    });
+  };
+
+  const handleDecSpeed = (speed: DecSpeedButton): void => {
+    setSelectedDecSpeed(speed);
+    sendUDPMessage({ 
+      type: 'command', 
+      command: 'decspeed',
+      parameters: speed
     });
   };
 
@@ -167,32 +169,33 @@ const UDPControlApp: React.FC = () => {
     setReceivedMessages([]);
   };
 
+  const connect = () => {
+    sendUDPMessage({type: 'command', command:'connect', parameters:''});
+  }
+
   // Rendu des boutons (identique aux versions précédentes)
-  const renderButtonRow = (
-    options: string[], 
-    selectedValue: string | null, 
-    onPress: (value: any) => void
-  ) => (
-    <View style={styles.rowContainer}>
-      {options.map((option) => (
-        <TouchableOpacity
-          key={option}
-          style={[
-            styles.button, 
-            selectedValue === option && styles.selectedButton
-          ]}
-          onPress={() => onPress(option)}
-        >
-          <Text style={styles.buttonText}>{option}</Text>
-        </TouchableOpacity>
-      ))}
-    </View>
-  );
   
 
+  if (!isConnected) { 
+    return (
+      <View style={styles.container} >
+        <Text style={styles.title}>Connectez vous à la lunette</Text>
+
+        <Button options={['Connecter']} onPress={connect}/>
+      </View>
+    )
+  }
+
   return (
-    <View style={styles.container}>
+    <View style={styles.container} >
+          <View style={styles.rowContainer}>
+            <Text style={styles.title}>Connected</Text>
+            <LedButton isOn={true} />
+            <Text style={styles.title}>End of track</Text>
+            <LedButton isOn={!endCourse} />
+          </View>
       {/* Boutons de contrôle (identiques aux versions précédentes) */}
+      <Text style={styles.title}>AD Speed</Text>
       {renderButtonRow(
         ['solar', 'lunar', 'sidereal'], 
         selectedSolar, 
@@ -204,6 +207,16 @@ const UDPControlApp: React.FC = () => {
         selectedMultiplier, 
         handleMultiplierPress
       )}
+      <Text style={styles.title}>Dec speed</Text>
+
+      {renderButtonRow(
+        ['slow', 'fast'], 
+        selectedDecSpeed, 
+        handleDecSpeed
+      )}
+      
+      
+      <Text style={styles.title}>Commands</Text>
 
       <View style={styles.directionalContainer}>
         <View style={styles.directionalRow}>
@@ -254,8 +267,7 @@ const UDPControlApp: React.FC = () => {
         </View>
       </View>
 
-
-      <Text style={styles.buttonText}>Coupole</Text>
+      <Text style={styles.title}>Dome</Text>
 
       <View style={styles.directionalContainer}>
         <View style={styles.directionalMiddleRow}>
@@ -283,12 +295,12 @@ const UDPControlApp: React.FC = () => {
       </View>
       {/* Section des messages reçus */}
       <View style={styles.receivedMessagesContainer}>
-        <Text style={styles.receivedMessagesTitle}>Messages Reçus:</Text>
+        <Text style={styles.receivedMessagesTitle}>Received messages:</Text>
         <TouchableOpacity 
           style={styles.clearButton} 
           onPress={clearReceivedMessages}
         >
-          <Text style={styles.clearButtonText}>Effacer</Text>
+          <Text style={styles.clearButtonText}>Delete</Text>
         </TouchableOpacity>
         <ScrollView style={styles.receivedMessagesList} ref={scrollViewRef} >
           {receivedMessages.map((msg, index) => (
@@ -302,99 +314,6 @@ const UDPControlApp: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  // ... (styles précédents)
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#f0f0f0'
-  },
-  rowContainer: {
-    flexDirection: 'row',
-    marginVertical: 10,
-    justifyContent: 'center'
-  },
-  button: {
-    backgroundColor: '#e0e0e0',
-    padding: 15,
-    margin: 5,
-    borderRadius: 10,
-    minWidth: 70,
-    alignItems: 'center'
-  },
-  selectedButton: {
-    backgroundColor: '#4CAF50'
-  },
-  buttonText: {
-    color: 'black',
-    fontWeight: 'bold'
-  },
-  directionalContainer: {
-    marginVertical: 10
-  },
-  directionalRow: {
-    flexDirection: 'row',
-    justifyContent: 'center'
-  },
-  directionalMiddleRow: {
-    flexDirection: 'row',
-    justifyContent: 'center'
-  },
-  directionalButton: {
-    backgroundColor: '#e0e0e0',
-    padding: 15,
-    margin: 5,
-    borderRadius: 10,
-    width: 70,
-    height: 70,
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  // Nouveaux styles pour les messages reçus
-  receivedMessagesContainer: {
-    marginTop: 20,
-    width: '100%',
-    maxHeight: 200,
-    borderTopWidth: 1,
-    borderTopColor: '#ccc',
-    paddingTop: 10,
-  },
-  receivedMessagesTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  receivedMessagesList: {
-    maxHeight: 150,
-  },
-  receivedMessageText: {
-    backgroundColor: '#f0f0f0',
-    padding: 5,
-    marginVertical: 2,
-    borderRadius: 5,
-  },
-  clearButton: {
-    alignSelf: 'flex-end',
-    marginRight: 10,
-    backgroundColor: '#ff4500',
-    padding: 5,
-    borderRadius: 5,
-  },
-  clearButtonText: {
-    color: 'white',
-    fontSize: 12,
-  },
-  pressReleaseButton: {
-    backgroundColor: '#007bff',
-    padding: 15,
-    margin: 10,
-    borderRadius: 10,
-    minWidth: 100,
-    alignItems: 'center'
-  },
-});
+
 
 export default UDPControlApp;

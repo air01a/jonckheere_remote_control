@@ -15,6 +15,8 @@ const unsigned long clientTimeout = 60000;       // 60 secondes
 // Liste des clients connectés
 std::vector<NetworkModule::Client> UdpClients;
 
+
+
 // Tampon pour les paquets UDP
 char packetBuffer[1024];
 

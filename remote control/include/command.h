@@ -51,7 +51,7 @@ String mode(String parameters);
 String multiplier(String parameters); 
 String direction(String parameters);
 String coupole(String parameters);
-
+String connect(String parameters);
 
 
 String processCommand(String command, String parameters, String clientId);

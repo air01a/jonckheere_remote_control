@@ -6,7 +6,10 @@ Command commands[NUM_COMMANDS] = {
     {"multiplier",multiplier},
     {"direction",direction},
     {"coupole",coupole},
+    {"connect",connect},
   };
+
+
 
 si5351RDiv_t r_div = SI5351_R_DIV_64;
 int freq_index = 0;
@@ -20,6 +23,33 @@ FrequencyParams ADFrequencies[NUM_FREQUENCIES] = {
 
 const char *frequencyName[3] = {"solar", "sidereal", "lunar"};
 String ok="OK";
+
+String connect(String parameters) {
+    String mode=frequencyName[freq_index];
+    String multiplier;
+    switch(r_div) {
+        case SI5351_R_DIV_64:
+            multiplier="x1";break;
+        case SI5351_R_DIV_32:
+            multiplier="x2";break;
+        case SI5351_R_DIV_16:
+            multiplier="x4";break;
+        case SI5351_R_DIV_4:
+            multiplier="x16";break;
+    }   
+    String dec="slow";
+
+
+    JsonDocument doc;
+    doc["type"]="connect";
+    doc["dec_speed"]=dec;
+    doc["multiplier"]=multiplier;
+    doc["time_system"]=mode;
+
+    String response;
+    serializeJson(doc, response);
+    return response;
+}
 /***********************************************************/
 /*                   Manage si5351 command                 */
 /***********************************************************/
@@ -65,6 +95,7 @@ String setLunar()
     freq_index=2;
     setADFrequencies(ADFrequencies[freq_index].r_div);
     return retCommand(0, ok);
+
 
 }
 
