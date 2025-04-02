@@ -9,6 +9,18 @@ Command commands[NUM_COMMANDS] = {
     {"connect",connect},
   };
 
+  typedef struct  {
+    bool upLimit;
+    bool downLimit;
+  } limitSwitchStruct;
+  limitSwitchStruct decLimit = { false, false};
+  
+int test1=0;
+
+
+int retTest1() {
+    return test1;
+}
 
 
 si5351RDiv_t r_div = SI5351_R_DIV_64;
@@ -176,6 +188,7 @@ String  dec_stop() {
     
 String  dec_plus() {
     // set_frequency();
+    test1++;
     digitalWrite(DIR_DEC_PIN,HIGH);
     setDECFrequencies(r_div);
     return retCommand(0, ok);
@@ -184,6 +197,7 @@ String  dec_plus() {
 }
     
 String dec_minus() {
+    test1--;
     digitalWrite(DIR_DEC_PIN,LOW);
     setDECFrequencies(r_div);
     // set_frequency();
@@ -304,6 +318,12 @@ String  processCommand(String command, String parameters, String clientId) {
         }
     }
     return retCommand(1, "Invalid command");
+}
+void setEndCourse(bool up, bool down) {
+    decLimit.upLimit=up;
+    decLimit.downLimit=down;
+
+
 }
 
 void initClock() {

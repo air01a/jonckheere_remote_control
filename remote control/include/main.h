@@ -8,7 +8,7 @@
 #include <vector>
 #include <Wire.h>
 #include "command.h"
-
+#include "pin.h"
 
 
 //#define CLOCKSIMULATOR 1

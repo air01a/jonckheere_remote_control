@@ -25,7 +25,7 @@ namespace NetworkModule {
 
 
 void processUdpPacket();
-void sendNotificationsToUdpClients();
+void sendNotificationsToUdpClients(String type, String message, String parameters);
 bool startWifi();
 void startUdpServer();
 void cleanupClient();

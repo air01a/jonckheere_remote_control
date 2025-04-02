@@ -146,15 +146,14 @@ void sendJsonResponse(IPAddress clientIp, uint16_t clientPort, JsonDocument& doc
   }
   
   // Fonction pour envoyer des notifications aux UdpClients
-  void sendNotificationsToUdpClients() {
+  void sendNotificationsToUdpClients(String type, String message, String parameters) {
     if (UdpClients.empty()) return;
     
     // Créer la notification (exemple: données de capteur)
     JsonDocument  notificationDoc;
-    notificationDoc["type"] = "notification";
-    notificationDoc["timestamp"] = millis();
-    notificationDoc["temperature"] = random(20, 31); // Valeur simulée
-    notificationDoc["humidity"] = random(40, 91);    // Valeur simulée
+    notificationDoc["type"] = type;
+    notificationDoc["message"] = message;
+    notificationDoc["parameters"] = parameters; // Valeur simulée
     
     // Pour chaque client, envoyer la notification
     Serial.println("Envoi de notifications à " + String(UdpClients.size()) + " UdpClients:");

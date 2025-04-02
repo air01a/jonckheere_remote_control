@@ -22,14 +22,16 @@ const UDPControlApp: React.FC = () => {
   const [selectedCou, setSelectedCou] = useState<CouButton | null>(null);
   const [selectedDecSpeed, setSelectedDecSpeed] = useState<DecSpeedButton | null>(null);
   const [receivedMessages, setReceivedMessages] = useState<string[]>([]);
-  const [endCourse, setEndCourse] = useState<boolean>(false);
+  const [endCourseUp, setEndCourseUp] = useState<boolean>(false);
+  const [endCourseDown, setEndCourseDown] = useState<boolean>(false);
   const [isConnected, setIsConnected] = useState<boolean>(false);
   // Configuration réseau
 
   // Socket UDP pour l'envoi et la réception
   const [udpSocket, setUdpSocket] = useState<any>(null);
   const scrollViewRef =  useRef<ScrollView>(null);
-
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pingRef = useRef<NodeJS.Timeout | null>(null);
 
 
   useEffect(() => {
@@ -42,10 +44,27 @@ const UDPControlApp: React.FC = () => {
   const onUdpMessageCallBack = (msg: Buffer, rinfo: any) => {
     try {
       if (!isConnected) setIsConnected(true);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      timeoutRef.current = setTimeout(() => {
+        console.log('Aucun message reçu depuis 3 minutes, réinitialisation du statut');
+        setIsConnected(false);
+      }, 3*60 * 1000);
       //convert msg to object with json
       const msgJson = JSON.parse(msg.toString('utf8'));
       if (msgJson.type === 'endCourse') {
-        setEndCourse(msgJson.value);
+        if (msgJson.message === 'ON') {
+          if (msgJson.parameters==='UP') {
+            setEndCourseUp(true);
+          } else {
+            setEndCourseDown(true);
+          }
+        }
+        if (msgJson.message === 'OFF') {
+          setEndCourseUp(false);
+          setEndCourseDown(false);
+        }
       } else { 
         if (msgJson.type === 'connect') {
           setSelectedDecSpeed(msgJson.dec_speed);
@@ -74,10 +93,10 @@ const UDPControlApp: React.FC = () => {
 
     // Sauvegarde du socket
     setUdpSocket(socket);
-
     // Nettoyage à la fermeture
     return () => {
       socket.close();
+      if (pingRef.current) clearInterval(pingRef.current);
     };
   }, []);
 
@@ -171,6 +190,9 @@ const UDPControlApp: React.FC = () => {
 
   const connect = () => {
     sendUDPMessage({type: 'command', command:'connect', parameters:''});
+    
+    pingRef.current = setInterval(() =>sendUDPMessage({type:"ping", command:"NA", parameters:"NA"}), 60*1000 );
+
   }
 
   // Rendu des boutons (identique aux versions précédentes)
@@ -191,8 +213,6 @@ const UDPControlApp: React.FC = () => {
           <View style={styles.rowContainer}>
             <Text style={styles.title}>Connected</Text>
             <LedButton isOn={true} />
-            <Text style={styles.title}>End of track</Text>
-            <LedButton isOn={!endCourse} />
           </View>
       {/* Boutons de contrôle (identiques aux versions précédentes) */}
       <Text style={styles.title}>AD Speed</Text>
@@ -219,17 +239,22 @@ const UDPControlApp: React.FC = () => {
       <Text style={styles.title}>Commands</Text>
 
       <View style={styles.directionalContainer}>
-        <View style={styles.directionalRow}>
-          <TouchableOpacity
-            style={[
-              styles.directionalButton, 
-              selectedDirection === 'up' && styles.selectedButton
-            ]}
-            onPressIn={() => handleDirectionPress('up')}
-            onPressOut={() => handleDirectionPress('stop')}
-          >
-            <Text style={styles.buttonText}>▲</Text>
-          </TouchableOpacity>
+          <View style={styles.directionalRow}>
+            <TouchableOpacity
+              style={[
+                styles.directionalButton, 
+                selectedDirection === 'up' && styles.selectedButton
+              ]}
+              onPressIn={() => handleDirectionPress('up')}
+              onPressOut={() => handleDirectionPress('stop')}
+            >
+              <Text style={styles.buttonText}>▲</Text>
+            </TouchableOpacity>
+        
+              <View style={styles.rightSideContent}>
+                <LedButton isOn={!endCourseUp} />
+                <Text style={styles.text}>Fin course</Text>
+              </View>
         </View>
         <View style={styles.directionalMiddleRow}>
           <TouchableOpacity
@@ -242,6 +267,7 @@ const UDPControlApp: React.FC = () => {
           >
             <Text style={styles.buttonText}>◀</Text>
           </TouchableOpacity>
+          
           <TouchableOpacity
             style={[
               styles.directionalButton, 
@@ -264,6 +290,10 @@ const UDPControlApp: React.FC = () => {
           >
             <Text style={styles.buttonText}>▼</Text>
           </TouchableOpacity>
+          <View style={styles.rightSideContent}>
+                <LedButton isOn={!endCourseDown} />
+                <Text style={styles.text}>Fin course</Text>
+              </View>
         </View>
       </View>
 

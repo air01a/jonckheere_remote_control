@@ -3,6 +3,7 @@ import {
   } from 'react-native';
 
 export const styles = StyleSheet.create({
+
     title: {
         fontWeight: 'bold',
         marginBottom: 10,
@@ -16,12 +17,26 @@ export const styles = StyleSheet.create({
       justifyContent: 'center',
       alignItems: 'center',
       padding: 20,
-      backgroundColor: '#f0f0f0'
+      backgroundColor: '#f0f0f0',
     },
     rowContainer: {
       flexDirection: 'row',
       marginVertical: 10,
-      justifyContent: 'center'
+      justifyContent: 'space-between',
+      
+    },
+    rightSideContent: {
+      position: 'absolute',
+      right: 16,             // Marge par rapport au bord droit
+      top: '50%',            // Aligné verticalement avec le bouton du centre
+      transform: [           // Ajustement vertical
+        { translateY: -20 }  // À ajuster selon la taille du bouton
+      ],
+      alignItems: 'center',
+    },
+    text: {
+      marginTop: 8,
+      textAlign: 'center',
     },
     button: {
       backgroundColor: '#e0e0e0',
@@ -39,11 +54,14 @@ export const styles = StyleSheet.create({
       fontWeight: 'bold'
     },
     directionalContainer: {
-      marginVertical: 10
+      marginVertical: 10,
+      width: "100%",
+
     },
     directionalRow: {
       flexDirection: 'row',
-      justifyContent: 'center'
+      justifyContent: 'center',
+
     },
     directionalMiddleRow: {
       flexDirection: 'row',
