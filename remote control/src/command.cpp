@@ -28,12 +28,12 @@ int freq_index = 0;
 Adafruit_SI5351 clockgen = Adafruit_SI5351();
 
 FrequencyParams ADFrequencies[NUM_FREQUENCIES] = {
-    {24, 23607, 997652, 697, 0, 1, SI5351_R_DIV_64}, // "sidereal"
+    {24, 5161, 266660, 892, 0, 1, SI5351_R_DIV_64}, // "sidereal"
     {24, 6293, 234048, 699, 0, 1, SI5351_R_DIV_64},  // "solar"
     {24, 4303, 526562, 723, 0, 1, SI5351_R_DIV_64}   // "lunar"
 };
 
-const char *frequencyName[3] = {"solar", "sidereal", "lunar"};
+const char *frequencyName[3] = {"sidereal", "solar", "lunar"};
 String ok="OK";
 
 String connect(String parameters) {
@@ -113,7 +113,7 @@ String setLunar()
 
 String setSidereal()
 {
-    freq_index=1;
+    freq_index=0;
     setADFrequencies(ADFrequencies[freq_index].r_div);
     return retCommand(0, ok);
 
@@ -121,7 +121,7 @@ String setSidereal()
 
 String setSolar()
 {
-    freq_index=0;
+    freq_index=1;
     setADFrequencies(ADFrequencies[freq_index].r_div);
     return retCommand(0, ok);
 

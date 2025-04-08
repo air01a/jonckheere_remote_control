@@ -9,9 +9,9 @@ import {
   ScrollView
 } from 'react-native';
 import { Buffer } from 'buffer';
-import LedButton from './components/led-button';
-import renderButtonRow from './components/button-row';
-import Button from './components/button';
+import LedButton from '../appmobile/components/led-button';
+import renderButtonRow from '../appmobile/components/button-row';
+import Button from '../appmobile/components/button';
 import { initUdpSocket, NETWORK_CONFIG } from './lib/udpsocket';
 
 
@@ -217,13 +217,13 @@ const UDPControlApp: React.FC = () => {
       {/* Boutons de contrôle (identiques aux versions précédentes) */}
       <Text style={styles.title}>AD Speed</Text>
       {renderButtonRow(
-        ['solar', 'lunar', 'sidereal'], 
+        ['sidereal','solar', 'lunar'], 
         selectedSolar, 
         handleSolarPress
       )}
 
       {renderButtonRow(
-        ['x1', 'x2', 'x4', 'x16'], 
+        [ 'x2', 'x4', 'x16'], 
         selectedMultiplier, 
         handleMultiplierPress
       )}

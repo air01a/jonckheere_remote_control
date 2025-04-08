@@ -1,6 +1,6 @@
 {
-  "name": "Jonckheere remote command",
-  "version": "1.0.0",
+  "name": "com.jonck.remotecommand",
+  "version": "0.0.1",
   "private": true,
   "scripts": {
     "android": "react-native run-android",
@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "react": "19.0.0",
-    "react-native": "0.78.1",
+    "react-native": "0.78.2",
     "react-native-udp": "^4.1.7"
   },
   "devDependencies": {
@@ -21,10 +21,10 @@
     "@react-native-community/cli": "15.0.1",
     "@react-native-community/cli-platform-android": "15.0.1",
     "@react-native-community/cli-platform-ios": "15.0.1",
-    "@react-native/babel-preset": "0.78.1",
-    "@react-native/eslint-config": "0.78.1",
-    "@react-native/metro-config": "0.78.1",
-    "@react-native/typescript-config": "0.78.1",
+    "@react-native/babel-preset": "0.78.2",
+    "@react-native/eslint-config": "0.78.2",
+    "@react-native/metro-config": "0.78.2",
+    "@react-native/typescript-config": "0.78.2",
     "@types/jest": "^29.5.13",
     "@types/react": "^19.0.0",
     "@types/react-test-renderer": "^19.0.0",

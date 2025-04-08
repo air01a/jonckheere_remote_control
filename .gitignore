@@ -31,3 +31,21 @@
 *.out
 *.app
 appmobile/android/gradle.properties
+appmobile/android/app/src/main/java
+appmobile/ios/JonckheereRC.xcodeproj
+appmobile/ios/JonckheereRC
+appmobile2/
+remote control/.vscode/settings.json
+appmobile/android/gradle.properties
+appmobile/android/gradlew.bat
+appmobile/android/settings.gradle
+appmobile/ios/Podfile
+appmobile/ios/appmobile.xcodeproj/project.pbxproj
+appmobile/ios/appmobile.xcodeproj/xcshareddata/xcschemes/appmobile.xcscheme
+appmobile/ios/appmobile/AppDelegate.swift
+appmobile/ios/appmobile/Images.xcassets/AppIcon.appiconset/Contents.json
+appmobile/ios/appmobile/Images.xcassets/Contents.json
+appmobile/ios/appmobile/Info.plist
+appmobile/ios/appmobile/LaunchScreen.storyboard
+appmobile/ios/appmobile/PrivacyInfo.xcprivacy
+appmobile/package-lock.json
