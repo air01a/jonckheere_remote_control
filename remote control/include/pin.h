@@ -4,6 +4,7 @@
 // PIN For orientation 
 #define DIR_AD_PIN 15
 #define DIR_DEC_PIN 16
+#define DIR_DEC_ACTIVATE 17
 #define DIR_COU1  25
 #define DIR_COU2 26
 

@@ -49,3 +49,4 @@ appmobile/ios/appmobile/Info.plist
 appmobile/ios/appmobile/LaunchScreen.storyboard
 appmobile/ios/appmobile/PrivacyInfo.xcprivacy
 appmobile/package-lock.json
+appmobile/android/app/build.gradle

@@ -4,6 +4,7 @@
 
 
 #define NUM_FREQUENCIES 3
+#define NUM_FREQUENCIES_DEC 2
 #include "pin.h"
 
 // PLL managing AD and DEC
@@ -44,6 +45,7 @@ String multiplier(String parameters);
 String direction(String parameters);
 String coupole(String parameters);
 String connect(String parameters);
+String decspeed(String parameters);
 String dec_stop();
 
 String processCommand(String command, String parameters, String clientId);

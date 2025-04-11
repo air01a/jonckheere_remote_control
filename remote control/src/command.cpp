@@ -7,6 +7,7 @@ Command commands[NUM_COMMANDS] = {
     {"direction",direction},
     {"coupole",coupole},
     {"connect",connect},
+    {"decspeed",decspeed},
   };
 
   typedef struct  {
@@ -23,8 +24,9 @@ int retTest1() {
 }
 
 
-si5351RDiv_t r_div = SI5351_R_DIV_64;
+si5351RDiv_t r_div = SI5351_R_DIV_32;
 int freq_index = 0;
+int freq_index_dec = 0;
 Adafruit_SI5351 clockgen = Adafruit_SI5351();
 
 FrequencyParams ADFrequencies[NUM_FREQUENCIES] = {
@@ -32,6 +34,12 @@ FrequencyParams ADFrequencies[NUM_FREQUENCIES] = {
     {24, 6293, 234048, 699, 0, 1, SI5351_R_DIV_64},  // "solar"
     {24, 4303, 526562, 723, 0, 1, SI5351_R_DIV_64}   // "lunar"
 };
+
+FrequencyParams DECFrequencies[NUM_FREQUENCIES_DEC] = {
+    {24, 5161, 266660, 892, 0, 1, SI5351_R_DIV_32}, // "Slow"
+    {24, 6293, 234048, 699, 0, 1, SI5351_R_DIV_8},  // "fast"
+};
+
 
 const char *frequencyName[3] = {"sidereal", "solar", "lunar"};
 String ok="OK";
@@ -49,12 +57,12 @@ String connect(String parameters) {
         case SI5351_R_DIV_4:
             multiplier="x16";break;
     }   
-    String dec="slow";
+    String dec[]={"slow","fast"};
 
 
     JsonDocument doc;
     doc["type"]="connect";
-    doc["dec_speed"]=dec;
+    doc["dec_speed"]=dec[freq_index_dec];
     doc["multiplier"]=multiplier;
     doc["time_system"]=mode;
 
@@ -80,9 +88,9 @@ void setADFrequencies(si5351RDiv_t rdiv){
     set_frequency(CLOCK_AD_PLL, CLOCK_AD_OUTPUT,  params, rdiv);
 }
 
-void setDECFrequencies(si5351RDiv_t rdiv){
-    FrequencyParams params = ADFrequencies[freq_index];
-    set_frequency(CLOCK_DEC_PLL, CLOCK_DEC_OUTPUT, params, rdiv);
+void setDECFrequencies(){
+    FrequencyParams params = DECFrequencies[freq_index_dec];
+    set_frequency(CLOCK_DEC_PLL, CLOCK_DEC_OUTPUT, params, params.r_div);
 }
 
 
@@ -130,11 +138,6 @@ String setSolar()
 /***********************************************************/
 /*                    Manage speed command                 */
 /***********************************************************/
-String x1()
-{
-    r_div = SI5351_R_DIV_64;
-    return retCommand(0, ok);
-}
 
 String x2()
 {
@@ -182,28 +185,48 @@ String  ad_minus() {
     
 String  dec_stop() {
     //set_frequency(SI5351_R_DIV_64);
+    digitalWrite(DIR_DEC_ACTIVATE, LOW);
+
     return retCommand(0, ok);
 
 }
     
 String  dec_plus() {
     // set_frequency();
-    test1++;
     digitalWrite(DIR_DEC_PIN,HIGH);
-    setDECFrequencies(r_div);
+    digitalWrite(DIR_DEC_ACTIVATE, HIGH);
+
+    setDECFrequencies();
     return retCommand(0, ok);
     
     
 }
     
 String dec_minus() {
-    test1--;
     digitalWrite(DIR_DEC_PIN,LOW);
-    setDECFrequencies(r_div);
+    digitalWrite(DIR_DEC_ACTIVATE, HIGH);
+
+    setDECFrequencies();
     // set_frequency();
     return retCommand(0, ok);
     
 }
+
+
+String decspeed(String parameters) {
+    if (parameters.compareTo("fast") == 0) {
+        freq_index_dec=1;
+        setDECFrequencies();
+    } else if (parameters.compareTo("slow") == 0) {
+        freq_index_dec=0;
+        setDECFrequencies();
+    } else {
+        Serial.println("Invalid dec speed");
+        return retCommand(1, "Invalid dec speed");
+    }
+    return retCommand(0, ok);
+}
+
     
     
 /***********************************************************/
@@ -233,10 +256,7 @@ String  cou_minus() {
 
 
 String multiplier(String parameters) {
-    if (parameters.compareTo("x1") == 0) {
-        x1();
-        return retCommand(0, ok);
-    } else if (parameters.compareTo("x2") == 0) {
+    if (parameters.compareTo("x2") == 0) {
         x2();
         return retCommand(0, ok);
     } else if (parameters.compareTo("x4") == 0) {
@@ -336,6 +356,7 @@ void initClock() {
    // while(1);
   } else {
     Serial.println("Si5351 detected!");
+    setSidereal();
   }
 #endif
 }
