@@ -4,7 +4,7 @@
 // Port UDP
 
 volatile bool stateEndOfCourseHasChanged = false;
-
+bool isEndOfCourse = false; 
 
 void IRAM_ATTR interruptFunction() {
   stateEndOfCourseHasChanged = true;
@@ -44,36 +44,35 @@ void loop() {
 
   // Traiter les paquets UDP entrants
   processUdpPacket();
-  if (stateEndOfCourseHasChanged) {
+ //if(stateEndOfCourseHasChanged) {
     // Code à exécuter quand l'état du pin change
-    Serial.println("État du pin changé!");
+   // Serial.println("État du pin changé!");
     bool ec1 = digitalRead(ENDCOURSE1);
     bool ec2 = digitalRead(ENDCOURSE2);
     setEndCourse(ec1, ec2);
-    if (ec1 && ec2) {
-      sendNotificationsToUdpClients("endCourse","OFF","NA");
+
+    if (!ec1 && !ec2 ) {
+      if ( isEndOfCourse) {
+        Serial.println("send off course");
       
-    } else {
-      dec_stop();
-      if (!ec1) {
-        sendNotificationsToUdpClients("endCourse","ON","UP");
-      } else {
-        sendNotificationsToUdpClients("endCourse","ON","DOWN");
+        sendNotificationsToUdpClients("endCourse","OFF","NA");
+        isEndOfCourse = false;
       }
-    }
-    stateEndOfCourseHasChanged = false;  // Réinitialiser le drapeau
-  }
-
-  if (abs(retTest1())>5) {
-    if (retTest1()>5) {
-      sendNotificationsToUdpClients("endCourse","ON","UP");
     } else {
-      sendNotificationsToUdpClients("endCourse","ON","DOWN");
+      if (!isEndOfCourse) {
+        isEndOfCourse = true;
+        dec_stop();
+        if (ec1) {
+          sendNotificationsToUdpClients("endCourse","ON","UP");
+        } else {
+          sendNotificationsToUdpClients("endCourse","ON","DOWN");
+        }
+     }
     }
-  }
+   // stateEndOfCourseHasChanged = false;  // Réinitialiser le drapeau
+ // }
 
-  if (abs(retTest1()==6))
-    sendNotificationsToUdpClients("endCourse","OFF","NA");
+ 
 
   //cleanupClient();
   // Vérifier s'il est temps d'envoyer des notifications

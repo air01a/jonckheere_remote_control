@@ -50,7 +50,7 @@ void sendJsonResponse(IPAddress clientIp, uint16_t clientPort, JsonDocument& doc
   int findOrAddClient(IPAddress ip, uint16_t port, String id) {
     // Chercher si le client existe déjà
     for (size_t i = 0; i < UdpClients.size(); i++) {
-      if (UdpClients[i].ip == ip && UdpClients[i].id == id) {
+      if (UdpClients[i].ip == ip ) {
         UdpClients[i].lastSeen = millis();
         return i;
       }
