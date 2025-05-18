@@ -364,7 +364,7 @@ void initClock() {
    // while(1);
   } else {
     Serial.println("Si5351 detected!");
-    setLunar();
+    setSidereal();
   }
 #endif
 }
