@@ -267,6 +267,17 @@ const UDPControlApp: React.FC = () => {
           >
             <Text style={styles.buttonText}>◀</Text>
           </TouchableOpacity>
+
+         <TouchableOpacity
+            style={[
+              styles.directionalButton, 
+              selectedDirection === 'left' && styles.selectedButton
+            ]}
+            onPressIn={() => handleDirectionPress('freeze')}
+            onPressOut={() => handleDirectionPress('unfreeze')}
+          >
+            <Text style={styles.buttonText}>⏹</Text>
+          </TouchableOpacity>
           
           <TouchableOpacity
             style={[

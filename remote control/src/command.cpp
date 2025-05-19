@@ -179,7 +179,17 @@ String  ad_minus() {
     digitalWrite(DIR_AD_PIN,LOW);
     setADFrequencies(r_div);
     return retCommand(0, ok);
+}
 
+String  ad_freeze() {
+    digitalWrite(DIR_AD_ACTIVATE,LOW);
+    return retCommand(0, ok);
+}
+
+
+String  ad_unfreeze() {
+    digitalWrite(DIR_AD_ACTIVATE,HIGH);
+    return retCommand(0, ok);
 }
     
     
@@ -290,6 +300,12 @@ String direction(String parameters) {
         return retCommand(0, ok);
     } else if (parameters.compareTo("down") == 0) {
         dec_minus();
+        return retCommand(0, ok);
+    } else if (parameters.compareTo("freeze") == 0) {
+        ad_freeze();
+        return retCommand(0, ok);
+    } else if (parameters.compareTo("unfreeze") == 0) {
+        ad_unfreeze();
         return retCommand(0, ok);
     } else if (parameters.compareTo("stop") == 0) {
         ad_stop();
