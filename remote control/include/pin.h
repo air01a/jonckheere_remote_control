@@ -5,7 +5,7 @@
 #define DIR_AD_PIN 15
 #define DIR_DEC_PIN 2
 #define DIR_DEC_ACTIVATE 4
-#define DIR_AD_ACTIVATE 5
+#define DIR_AD_ACTIVATE 27
 #define DIR_COU1  25
 #define DIR_COU2 26
 
