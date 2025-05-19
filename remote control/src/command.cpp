@@ -30,9 +30,9 @@ int freq_index_dec = 0;
 Adafruit_SI5351 clockgen = Adafruit_SI5351();
 
 FrequencyParams ADFrequencies[NUM_FREQUENCIES] = {
-    {24, 5161, 266660, 892, 0, 1, SI5351_R_DIV_64}, // "sidereal"
-    {24, 6293, 234048, 699, 0, 1, SI5351_R_DIV_64},  // "solar"
-    {24, 4303, 526562, 723, 0, 1, SI5351_R_DIV_64}   // "lunar"
+    {24, 5161, 309650, 892, 0, 1, SI5351_R_DIV_64}, // "sidereal"
+    {24, 1453, 305639, 894, 0, 1, SI5351_R_DIV_64},  // "solar"
+    {24, 7500, 386239, 926, 0, 1, SI5351_R_DIV_64}   // "lunar"
 };
 
 FrequencyParams DECFrequencies[NUM_FREQUENCIES_DEC] = {
