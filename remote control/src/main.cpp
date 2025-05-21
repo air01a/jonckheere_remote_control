@@ -53,7 +53,7 @@ void loop() {
     bool ec2 = digitalRead(ENDCOURSE2);
     setEndCourse(ec1, ec2);
 
-    if (!ec1 && !ec2 ) {
+    if (ec1 && ec2 ) {
       if ( isEndOfCourse) {
         Serial.println("send off course");
       
@@ -64,7 +64,7 @@ void loop() {
       if (!isEndOfCourse) {
         isEndOfCourse = true;
         dec_stop();
-        if (ec1) {
+        if (!ec1) {
           sendNotificationsToUdpClients("endCourse","ON","UP");
         } else {
           sendNotificationsToUdpClients("endCourse","ON","DOWN");
