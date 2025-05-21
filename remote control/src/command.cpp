@@ -1,5 +1,6 @@
 #include "command.h"
 #include <ArduinoJson.h>
+#include "network.h"
 
 Command commands[NUM_COMMANDS] = {
     {"mode",mode},
@@ -195,6 +196,7 @@ String  ad_unfreeze() {
     
 String  dec_stop() {
     //set_frequency(SI5351_R_DIV_64);
+    Serial.println("Stop dec");
     digitalWrite(DIR_DEC_ACTIVATE, LOW);
     return retCommand(0, ok);
 
@@ -204,7 +206,8 @@ String  dec_plus() {
     // set_frequency();
 
     if (digitalRead(ENDCOURSE1)) {
-        dec_stop();
+        digitalWrite(DIR_DEC_ACTIVATE, LOW);
+        sendNotificationsToUdpClients("endCourse","ON","UP");
         return retCommand(1, "End course 1 reached");
     }
     digitalWrite(DIR_DEC_PIN,HIGH);
@@ -218,7 +221,9 @@ String  dec_plus() {
     
 String dec_minus() {
     if (digitalRead(ENDCOURSE2)) {
-        dec_stop();
+        digitalWrite(DIR_DEC_ACTIVATE, LOW);
+        sendNotificationsToUdpClients("endCourse","ON","DOWN");
+
         return retCommand(1, "End course 2 reached");
     }
     digitalWrite(DIR_DEC_PIN,LOW);
