@@ -50,11 +50,12 @@ void loop() {
     // Code à exécuter quand l'état du pin change
    // Serial.println("État du pin changé!");
     bool ec1 = digitalRead(ENDCOURSE1);
+
     bool ec2 = digitalRead(ENDCOURSE2);
-    Serial.print("End course 1: ");
-    Serial.print(ec1);  
-    Serial.print(" End course 2: ");
-    Serial.println(ec2);
+    //Serial.print("End course 1: ");
+    //Serial.println(ec1);
+    //Serial.print("End course 2: ");
+
     setEndCourse(ec1, ec2);
 
     if (!ec1 && !ec2 ) {
@@ -69,7 +70,7 @@ void loop() {
       if (!isEndOfCourse) {
         isEndOfCourse = true;
         dec_stop();
-        if (ec1) {
+        if (!ec1) {
           sendNotificationsToUdpClients("endCourse","ON","UP");
         } else {
           sendNotificationsToUdpClients("endCourse","ON","DOWN");
