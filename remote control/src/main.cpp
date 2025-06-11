@@ -51,6 +51,10 @@ void loop() {
    // Serial.println("État du pin changé!");
     bool ec1 = digitalRead(ENDCOURSE1);
     bool ec2 = digitalRead(ENDCOURSE2);
+    Serial.print("End course 1: ");
+    Serial.print(ec1);  
+    Serial.print(" End course 2: ");
+    Serial.println(ec2);
     setEndCourse(ec1, ec2);
 
     if (!ec1 && !ec2 ) {
@@ -61,6 +65,7 @@ void loop() {
         isEndOfCourse = false;
       }
     } else {
+      Serial.println("CROUSE ON");
       if (!isEndOfCourse) {
         isEndOfCourse = true;
         dec_stop();

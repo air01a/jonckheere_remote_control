@@ -204,7 +204,8 @@ String  dec_plus() {
     // set_frequency();
 
     if (digitalRead(ENDCOURSE1)) {
-        dec_stop();
+        digitalWrite(DIR_DEC_ACTIVATE, LOW);
+
         return retCommand(1, "End course 1 reached");
     }
     digitalWrite(DIR_DEC_PIN,HIGH);
@@ -218,7 +219,8 @@ String  dec_plus() {
     
 String dec_minus() {
     if (digitalRead(ENDCOURSE2)) {
-        dec_stop();
+        digitalWrite(DIR_DEC_ACTIVATE, LOW);
+
         return retCommand(1, "End course 2 reached");
     }
     digitalWrite(DIR_DEC_PIN,LOW);
