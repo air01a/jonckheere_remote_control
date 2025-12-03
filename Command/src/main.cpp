@@ -4,6 +4,9 @@
 #define PIN_DATA   4   // Q7 (serial output du dernier 74HC165)
 #define PIN_CLOCK  19   // Horloge pour décaler les bits
 #define PIN_LATCH   5   // /PL (load) pour capturer les valeurs
+#define PIN_ENABLE 21
+#define PIN_LED1   13
+#define PIN_LED2   12
 const char* ssid = "JONCKHEEREMOUNT";
 const char* password = "12345678";
 #include "Network.h"
@@ -11,7 +14,7 @@ const char* password = "12345678";
 uint16_t lastValue = 0;
 Network network("192.168.1.1", 4000);
 int i=0;
-
+boolean hasBeenConnected = false;
 // Structure pour définir le comportement de chaque bit
 struct BitAction {
   const char* command;
@@ -45,7 +48,7 @@ void sendUdpCommand(const char* type, const char* cmd = "", const char* prarams 
   doc["command"] = cmd;
   doc["parameters"] = prarams;
   doc["client_id"] = "ESP32_001";
-
+  Serial.println(prarams);
   if (!network.sendJson(doc)) {
     Serial.println("#### Error sending UDP command ####");
   }
@@ -84,13 +87,13 @@ void processMode01(uint16_t value) {
   int b1 = (value >> 1) & 1;
 
   if (b0 == 0 && b1 == 0) {
-    sendUdpCommand("command", "solar");
+    sendUdpCommand("command", "mode", "solar");
   }
   else if (b0 == 1 && b1 == 0) {
-    sendUdpCommand("command", "sidereal");
+    sendUdpCommand("command", "mode", "sidereal");
   }
   else if (b0 == 0 && b1 == 1) {
-    sendUdpCommand("command", "lunar");
+    sendUdpCommand("command", "mode", "lunar");
   }
 }
 
@@ -134,30 +137,68 @@ void sendInitialSpecialModes(uint16_t value) {
   processBit9(value);
 }
 
+
+void WiFiEvent(WiFiEvent_t event) {
+  switch (event) {
+    case SYSTEM_EVENT_STA_DISCONNECTED:
+      if (hasBeenConnected) {
+        Serial.println("⚠️ WiFi perdu, tentative de reconnexion...");
+        WiFi.reconnect();
+      
+        Serial.println("❌ WiFi déconnecté !");
+        digitalWrite(PIN_ENABLE, LOW);
+      }
+      break;
+
+    case SYSTEM_EVENT_STA_CONNECTED:
+      Serial.println("✅ WiFi connecté !");
+      break;
+
+    default:
+      break;
+  }
+}
+
 // -------------------------------------------------------------------
 //  SETUP
 // -------------------------------------------------------------------
 void setup() {
     Serial.begin(115200);
+    pinMode(PIN_ENABLE, OUTPUT);
+    digitalWrite(PIN_ENABLE, HIGH); 
 
     pinMode(PIN_DATA, INPUT);
     pinMode(PIN_CLOCK, OUTPUT);
     pinMode(PIN_LATCH, OUTPUT);
-
+    pinMode(PIN_LED1, OUTPUT);
+    pinMode(PIN_LED2, OUTPUT);
     digitalWrite(PIN_CLOCK, LOW);
     digitalWrite(PIN_LATCH, HIGH);
+    digitalWrite(PIN_LED1, LOW);
+    digitalWrite(PIN_LED2, LOW);
+
+
 
     delay(100);
 
     // Lecture initiale
     lastValue = readSwitches();
-      
+    WiFi.onEvent(WiFiEvent);
+
     WiFi.begin(ssid, password);
     Serial.print("Connexion WiFi");
+    int count=0;
     while (WiFi.status() != WL_CONNECTED) {
         delay(500);
         Serial.print(".");
+        count++;
+        if (count>120) {
+          Serial.println("\n❌ Échec de la connexion WiFi");
+          digitalWrite(PIN_ENABLE, LOW);
+
+        }
     }
+    hasBeenConnected = true;
     Serial.println("\nWiFi connecté");
 
     network.begin(8000); // démarre UDP sur port 8000 local
@@ -183,13 +224,22 @@ void loop() {
     }
 
     i+=1;
-  
-
     // -----------------------------------
     // Read end of course notifications
     // -----------------------------------
     NetworkMessage msg = network.readMessage();
     if (msg.valid) {
+      if (msg.type == "endCourse") {
+        if (msg.message=="OFF") {
+          Serial.println("Extinction des LEDs");
+          digitalWrite(PIN_LED1, LOW);
+          digitalWrite(PIN_LED2, LOW);
+        } else if (msg.parameters=="UP") {
+          digitalWrite(PIN_LED2, HIGH);
+        } else  {
+          digitalWrite(PIN_LED1, HIGH);
+        }
+      }
         Serial.println("📩 Notification reçue :");
         Serial.println("  Type      : " + msg.type);
         Serial.println("  Message   : " + msg.message);
@@ -234,7 +284,7 @@ void loop() {
           const BitAction& action = bitActions[bit - 4];
           if (action.command != nullptr) {
             bool isOn = (current & (1 << bit)) != 0;
-            sendUdpCommand("command", action.command, isOn ? action.paramOn : action.paramOff);
+            sendUdpCommand("command", action.command, !isOn ? action.paramOn : action.paramOff);
           }
         }
       }
