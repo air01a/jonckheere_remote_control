@@ -207,6 +207,7 @@ void setup() {
     doc["client_id"] = "ESP32_001";
 
     network.sendJson(doc);
+    delay(500);
     // → envoyer état initial des 4 bits spéciaux
     sendInitialSpecialModes(lastValue);
 
@@ -219,6 +220,8 @@ void setup() {
 //  LOOP
 // -------------------------------------------------------------------
 void loop() {
+
+    // GARDE LA CONNEXION AVEC LE SERVEUR OUVERTE, REQUIS POUR LES MESSAGES DE FIN DE COURSE
     if (i%1000==0) {
       sendUdpCommand("ping");
     }
@@ -250,7 +253,7 @@ void loop() {
 
     uint16_t current = readSwitches();
 
-    // Bits qui changent
+    // Bits qui changent via xor
     uint16_t diff = current ^ lastValue;
 
     if (diff != 0) {
