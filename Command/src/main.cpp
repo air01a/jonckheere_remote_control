@@ -138,6 +138,9 @@ void sendInitialSpecialModes(uint16_t value) {
 }
 
 
+// -------------------------------------------------------------------
+//  DETECTE LA PERTE DU WIFI ET COUPE L'ALIMENTATION
+// -------------------------------------------------------------------
 void WiFiEvent(WiFiEvent_t event) {
   switch (event) {
     case SYSTEM_EVENT_STA_DISCONNECTED:
@@ -176,9 +179,6 @@ void setup() {
     digitalWrite(PIN_LATCH, HIGH);
     digitalWrite(PIN_LED1, LOW);
     digitalWrite(PIN_LED2, LOW);
-
-
-
     delay(100);
 
     // Lecture initiale
